@@ -43,7 +43,7 @@ to support simple text styling on a wide variety of browser platforms.
 
 # License
 Richie is provided under the MIT free software license. See LICENSE file for 
-the full text.
+the full text. Copyright 2010 [Dan Newcome](http://newcome.wordpress.com/).
 
 
 
