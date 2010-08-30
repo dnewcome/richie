@@ -1,0 +1,323 @@
+<!doctype html>
+<html>
+	<head>
+		<script language="javascript">
+
+			/**
+			* Richie is free software provided under the MIT license.
+			*	See LICENSE file for full text of the license.
+			*	Copyright 2010 Dan Newcome.
+			*/
+
+			function init() {
+				// on the iphone, trying to focus on load doesn't work
+				repositionInputBox();
+				keyboardinput.focus();
+			}
+
+			function convertCharcode( code ) {
+				return String.fromCharCode( code );
+			}
+
+			// the input control that receives text is absolutely positioned and
+			// its postion must be updated any time we insert text
+			function repositionInputBox() {
+				keyboardinput.style.top = cursor.offsetTop - 2 + "px";
+				keyboardinput.style.left = cursor.offsetLeft - 6 + "px";
+			}
+
+			// main handler for events that need charCode
+			function handleKey( evt ) {
+				console.log( 'KeyPress - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+				var cursor = document.getElementById( 'cursor' );
+				var el = cursor.parentElement;
+
+				// enter key
+				// char code is 10 on iphone for some reason
+				if( evt.charCode == 13 || evt.charCode == 10 ) {
+					var ins = document.createElement( 'p' );
+					var restofline = cursor.nextSibling;
+					var nextparagraph = cursor.parentNode.nextSibling;
+					var outernode = cursor.parentNode.parentNode;
+					ins.appendChild( cursor );
+					if( restofline != null ) {
+						ins.appendChild( restofline );
+					}
+					outernode.insertBefore( ins, nextparagraph );
+					evt.preventDefault();
+				}
+
+				// space
+				else if( evt.charCode == 32 ) { 
+					// insert non-breaking space char via unicode
+					var textNode = document.createTextNode( "\u00a0" );
+					cursor.parentNode.insertBefore( textNode, cursor );
+					evt.preventDefault();
+				}
+
+				// printable character insertion
+				else {
+					var text = convertCharcode( evt.charCode );
+					var textNode = document.createTextNode( text );
+					cursor.parentNode.insertBefore( textNode, cursor );
+				}
+
+				repositionInputBox();
+				editor.normalize();
+			}
+
+			// handler for key events that don't provide charCode, or for actions
+			// that don't require them. 
+			function handleKeydown( evt ) {
+				console.log( 'KeyDown - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+				var cursor = document.getElementById( 'cursor' );
+				
+				// backspace
+				// iphone registers 127, other browsers use 8
+				if( evt.keyCode == 8 || evt.keyCode == 127 ) {
+					if( cursor.previousSibling ) {
+						console.log( "backspace: prev sibling found" );
+						var prevlength = cursor.previousSibling.nodeValue.length;
+						console.log( "prevlength: " + prevlength );
+
+						// workaround for iphone which doesn't update length of text node correctly
+						// we have to remove two chars, and I don't know why. The first backspace
+						// removes two chars, but subsequent calls remove only one.
+						cursor.previousSibling.splitText( prevlength - 2 );
+						cursor.parentElement.removeChild( cursor.previousSibling );
+					}
+
+					// if we hit the end of a node, we merge the two nodes
+					else {
+						console.log( "end of node" );
+						var contents = cursor.parentNode.innerHTML;
+						var nodeToDelete = cursor.parentNode;
+						var previousNode = nodeToDelete.previousSibling;
+						cursor.parentNode.parentNode.removeChild( nodeToDelete );
+						previousNode.innerHTML += contents;
+					}
+				}
+
+				// tab 
+				else if( evt.keyCode == 9 ) {
+					var text = convertCharcode( evt.keyCode );
+
+					// can't find a 'non-breaking tab', so insert nbsp
+					var textNode = document.createTextNode( "\u00a0\u00a0\u00a0\u00a0" );
+					cursor.parentNode.insertBefore( textNode, cursor );
+
+					// keeps browser in focus
+					evt.preventDefault();
+					evt.stopPropagation();
+				}
+
+				// navigation
+				// should work on mobile devices that support arrow keys, iphone does not.
+				else if( evt.keyCode == 37 ) { // left arrow
+
+					var rng = document.createRange();
+					var prev = cursor.previousSibling;
+					
+					// we are at the edge of the node
+					if( prev == null ) {
+						console.log( "node edge reached" );
+
+						// if prev is still null, either we are either traversing an empty
+						// node or we need to go up a level in the dom tree...
+						// in the case that we find a previous non-empty element, we need
+						// to not offset the range like we do for the nominal case below.
+						// TODO: handle these cases.
+						prev = cursor.parentNode.previousSibling.lastChild;	
+
+						// try to navigate up in tree
+						/*
+						if( prev == null ) {
+							// check if we have reached the beginning of document
+							if( cursor.parentNode.parentNode == content ) { return; }
+							prev = cursor.parentNode.parentNode.lastChild;
+						}
+						*/
+					}
+
+					// length of the previous node - assumed to be text node
+					if( prev.nodeValue ) {
+					var prevlength = prev.nodeValue.length;
+
+					rng.setStart( prev, prevlength - 1 );
+					rng.setEnd( prev, prevlength - 1 );
+
+					rng.insertNode( cursor );
+					}
+					else {
+						cursor.parentNode.previousSibling.appendChild( cursor );
+					}
+
+				}
+				// right arrow
+				else if( evt.keyCode == 39 ) { 	
+					var rng = document.createRange();
+					var next = cursor.nextSibling;
+
+					// we are at the edge of the node
+					if( next == null ) {
+						console.log( "node edge reached" );
+						next = cursor.parentNode.nextSibling;	
+
+						// detect end of document
+						if( next == null ) { return; }
+					}
+					// length of the next node - assumed to be text node
+					// we only need this to avoid errors if node is zero length
+					// var nextlength = cursor.previousSibling.nodeValue.length;
+
+					rng.setStart( next, 1 );
+					rng.setEnd( next, 1 );
+					rng.insertNode( cursor );
+				}
+
+				// TODO: how to find correct position when traversing up 
+				// and down. currently we just go to end of line	
+				else if( evt.keyCode == 38 ) { // up arrow
+					var previousParagraph = cursor.parentNode.previousSibling;
+					previousParagraph.appendChild( cursor );
+					// not sure if we really need preventdefault with arrow keys
+					evt.preventDefault();
+				}
+				else if( evt.keyCode == 40 ) { // down arrow
+					var previousParagraph = cursor.parentNode.nextSibling;
+					previousParagraph.appendChild( cursor );
+					// not sure if we really need preventdefault with arrow keys
+					evt.preventDefault();
+				}
+
+				// keyboard shortcuts for toggling styles
+				// carryover from pc browser version.
+				else if ( evt.keyCode == 66 && evt.ctrlKey == true ) {
+					evt.preventDefault();
+					toggleStyling( 'B' );
+				}
+				else if ( evt.keyCode == 73 && evt.ctrlKey == true ) {
+					evt.preventDefault();
+					toggleStyling( 'I' );
+				}
+				else if ( evt.keyCode == 85 && evt.ctrlKey == true ) {
+					evt.preventDefault();
+					toggleStyling( 'U' );
+				}
+				
+				editor.normalize();
+			}
+
+			// TODO: clickhandler puts point at beginning of element
+		   	// without taking into account character offset	
+			// TODO: click handler does not work correctly in iphone
+			function clickHandler() {
+				console.log( "clickhandler fired" );
+				keyboardinput.focus();
+				var node = window.getSelection().focusNode;
+				console.log( "focusNode is: " + node );
+				// node.parentNode.insertBefore( cursor, node );
+			}
+
+			// Style is uppercase tag name for bold, italic, etc
+			function toggleStyling( style ) {
+				var currentElement = cursor.parentNode;
+				if( currentElement.tagName == style ) {
+					// split current node 
+					if( cursor.previousSibling ) {
+						var boldElement = document.createElement( style );
+						boldElement.appendChild( cursor.previousSibling );
+						currentElement.parentNode.insertBefore( boldElement, currentElement );
+					}
+					currentElement.parentNode.insertBefore( cursor, currentElement );
+				}
+				else {
+					var boldElement = document.createElement( style );
+					currentElement.insertBefore( boldElement, cursor );
+					boldElement.appendChild( cursor );
+				}
+				keyboardinput.focus();
+			}
+
+			// get contents of editor for posting/saving
+			function gettext() {
+				// ugly way to remove the cursor from exported data
+				alert( content.innerHTML.replace( /<span id="cursor".*?<\/span>/, '' ) );
+			}
+
+			// load editor with html content - uncomment textarea to paste html
+			function loadtext() {
+				content.innerHTML = textinput.value;
+				insertCursor();
+			}
+
+			// puts the cursor at the beginning of the document
+			// call after loading file, for example.
+			function insertCursor() {
+				var cursor = document.createElement( "span" );
+				cursor.id = "cursor";
+				cursor.innerHTML = "|";
+				content.firstChild.insertBefore( cursor, content.firstChild.firstChild );
+			}
+
+			function focusTextbox() {
+				if( keyboardinput.focused == undefined ) {
+					keyboardinput.focused = false;
+				}
+				console.log( keyboardinput.focused );
+				if( keyboardinput.focused == false ) {
+					console.log( "focusing input textbox" );
+					keyboardinput.focused = true;
+					keyboardinput.focus();
+				}	
+				else {
+					console.log( "not refocusing input textbox" );
+				}
+			}	
+
+		</script>
+		<style>
+			body {
+				font-size: 18pt;
+			}
+			#editor { 
+				border: 1px solid black; 
+				height: 300px;
+				width: 600px;	
+			}
+			p {
+				margin: 0px;
+				/* note that paragraph must have height in order for empty lines to show */
+				min-height: 18pt;
+			}
+			textarea {
+				width: 400px;
+				height: 100px;
+			}
+			#keyboardinput {
+				position: absolute;
+				background: none;
+				border: none;
+				width: 1px;
+				height: 18pt;
+				font-size: 16pt;
+			}
+		</style>
+	</head>
+	<body onkeypress="handleKey( event );" onkeydown="handleKeydown( event );" onload="init();">
+		<input type="button" onclick="toggleStyling( 'B' );" value="Bold"/>
+		<input type="button" onclick="toggleStyling( 'I' );" value="Italic" />
+		<input type="button" onclick="toggleStyling( 'U' );" value="Underline" />
+		<input id="keyboardinput" type="text"/>
+		<div id="editor" onclick="clickHandler(this);"><div id="content"><p><span id="cursor"></span>
+		</p></div></div>
+		<!--
+			uncomment to play with getting data in or out
+		<br>
+		<input type="button" onclick="loadtext();" value="Import" />
+		<input type="button" onclick="gettext();" value="Export" />
+		<br>
+		<textarea id="textinput"></textarea>
+		-->
+	</body>
+</html>
