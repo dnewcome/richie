@@ -1,0 +1,27 @@
+body {
+	font-size: 18pt;
+}
+.editor { 
+	border: 1px solid black; 
+	height: 300px;
+	width: 600px;	
+}
+.content  {
+}
+p {
+	margin: 0px;
+	/* note that paragraph must have height in order for empty lines to show */
+	min-height: 18pt;
+}
+textarea {
+	width: 400px;
+	height: 100px;
+}
+#keyboardinput {
+	position: absolute;
+	background: none;
+	border: none;
+	width: 1px;
+	height: 18pt;
+	font-size: 16pt;
+}
