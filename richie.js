@@ -30,6 +30,7 @@ function Richie( dom ) {
 }
 
 Richie.isMobile = true;
+Richie.isIphone = false;
 
 /**
 * blinkCursor is needed only for the desktop version. The
@@ -68,8 +69,8 @@ Richie.prototype.init = function() {
 	// on the iphone, trying to focus on load doesn't work
 	if( Richie.isMobile ) {
 		this.repositionInputBox();
+		this.m_keyboardInput.focus();
 	}
-	this.m_keyboardInput.focus();
 }
 
 /**
@@ -129,7 +130,9 @@ Richie.prototype.handleKey = function( evt ) {
 		cursor.parentNode.insertBefore( textNode, cursor );
 	}
 
-	this.repositionInputBox();
+	if( Richie.isMobile ) {
+		this.repositionInputBox();
+	}
 	this.m_editor.normalize();
 }
 
@@ -152,7 +155,12 @@ Richie.prototype.handleKeydown = function( evt ) {
 			// workaround for iphone which doesn't update length of text node correctly
 			// we have to remove two chars, and I don't know why. The first backspace
 			// removes two chars, but subsequent calls remove only one.
-			cursor.previousSibling.splitText( prevlength - 2 );
+			if( Richie.isIphone ) {
+				cursor.previousSibling.splitText( prevlength - 2 );
+			}
+			else {
+				cursor.previousSibling.splitText( prevlength - 1 );
+			}
 			cursor.parentElement.removeChild( cursor.previousSibling );
 		}
 
@@ -273,7 +281,10 @@ Richie.prototype.handleKeydown = function( evt ) {
 		evt.preventDefault();
 		this.toggleStyling( 'U' );
 	}
-	this.repositionInputBox();
+
+	if( Richie.isMobile ) {
+		this.repositionInputBox();
+	}
 	this.m_editor.normalize();
 }
 
@@ -292,8 +303,16 @@ Richie.prototype.clickHandler = function( ev ) {
 	// without taking into account character offset	
 	// var node = window.getSelection().focusNode;
 	var node = ev.target || ev.srcElement;
-	console.log( node );
-	node.parentNode.insertBefore( this.m_cursor, node );
+
+	// check to see if we have clicked in the editor itself rather
+	// than in the content. If we click in the editor we want to 
+	// navigate down to the content before placing the cursor
+	if( node.className == 'editor' ) {
+		node = node.firstChild.firstChild.firstChild;
+	}
+	else {
+		node.parentNode.insertBefore( this.m_cursor, node );
+	}
 }
 
 /**
@@ -301,8 +320,8 @@ Richie.prototype.clickHandler = function( ev ) {
 * @style is uppercase tag name for bold, italic, etc
 */
 Richie.prototype.toggleStyling = function( style ) {
-	var currentElement = cursor.parentNode;
 	var cursor = this.m_cursor;
+	var currentElement = cursor.parentNode;
 	if( currentElement.tagName == style ) {
 		// split current node 
 		if( cursor.previousSibling ) {
@@ -317,7 +336,12 @@ Richie.prototype.toggleStyling = function( style ) {
 		currentElement.insertBefore( boldElement, cursor );
 		boldElement.appendChild( cursor );
 	}
-	this.m_keyboardInput.focus();
+	if( Richie.isMobile ) {
+		this.m_keyboardInput.focus();
+	}
+	// put focus back on the text input area after button click
+	// otherwise the zero-width bold span cannot be typed in.
+	this.m_editor.focus();
 }
 
 /**
