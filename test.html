@@ -5,28 +5,29 @@
 		<link rel="stylesheet" href="richie.css"></link>
 		<script>
 			var richie;
-			var richie2;
+			Richie.isMobile = false;
+			// var richie2;
 			function init() {
 				richie = new Richie( editor44 );
-				richie2 = new Richie( editor49 );
+				// richie2 = new Richie( editor49 );
 				richie.init();
-				richie2.init();
+				// richie2.init();
 			}
 			function load() {
-				richie2.loadText("<h2>headline</h2><p>This is the body.</p>");
+				richie.loadText("<h2>headline</h2><p>This is the body.</p>");
 			}
 			function read() {
-				richie2.getText("<h2>headline</h2><p>This is the body.</p>");
+				richie.getText("<h2>headline</h2><p>This is the body.</p>");
 			}
 		</script>
 	</head>
 	<body onload="init();">
-		<input type="button" onclick="toggleStyling( 'B' );" value="Bold"/>
-		<input type="button" onclick="toggleStyling( 'I' );" value="Italic" />
-		<input type="button" onclick="toggleStyling( 'U' );" value="Underline" />
+		<input type="button" onclick="richie.toggleStyling( 'H1' );" value="H1"/>
+		<input type="button" onclick="richie.toggleStyling( 'B' );" value="Bold"/>
+		<input type="button" onclick="richie.toggleStyling( 'I' );" value="Italic" />
+		<input type="button" onclick="richie.toggleStyling( 'U' );" value="Underline" />
 		<input type="button" onclick="load();" value="Load Content" />
 		<input type="button" onclick="read();" value="Read Content" />
 		<div id="editor44" class="editor"></div>
-		<div id="editor49" class="editor"></div>
 	</body>
 </html>
