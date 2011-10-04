@@ -350,7 +350,7 @@ Richie.prototype.toggleStyling = function( style ) {
 Richie.prototype.getText = function() {
 	// ugly way to remove the cursor from exported data
 	// TODO: should change this to use DOM methods
-	alert( this.m_content.innerHTML.replace( /<span class="cursor".*?<\/span>/, '' ) );
+	return this.m_content.innerHTML.replace( /<span class="cursor".*?<\/span>/, '' );
 }
 
 /**
