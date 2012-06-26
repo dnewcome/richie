@@ -1,8 +1,8 @@
 function Richie( dom ) {
 	var me = this;
-	dom.addEventListener( "keypress", function(){ me.handleKey( event );} );
-	dom.addEventListener( "keydown", function(){ me.handleKeydown( event );} );
-	dom.addEventListener( "click", function(){ me.clickHandler( event );} );
+	dom.addEventListener( "keypress", function(event){ me.handleKey( event );}, false );
+	dom.addEventListener( "keydown", function(event){ me.handleKeydown( event );}, false );
+	dom.addEventListener( "click", function(event){ me.clickHandler( event );}, false );
 	
 	// TODO: not sure if we need the range for mobile
 	// we used this for moving the cursor via click in the desktop version
@@ -138,7 +138,8 @@ Richie.prototype.handleKey = function( evt ) {
 
 	// printable character insertion
 	else {
-		var text = this.convertCharcode( evt.charCode );
+		var text = this.convertCharcode( code );
+		Richie.trace( 'inserting text ' + text );
 		var textNode = document.createTextNode( text );
 		cursor.parentNode.insertBefore( textNode, cursor );
 	}
