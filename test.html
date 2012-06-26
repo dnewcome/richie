@@ -4,10 +4,16 @@
 		<script src="richie.js"></script>
 		<link rel="stylesheet" href="richie.css"></link>
 		<script>
+			function showVersion() {
+				var el = document.getElementById( 'version' );
+				el.appendChild( document.createTextNode( Richie.version ) );
+			}
+
 			var richie;
 			Richie.isMobile = false;
 			// var richie2;
 			function init() {
+				showVersion();
 				var editor44 = document.getElementById( 'editor44' );
 				richie = new Richie( editor44 );
 				// richie2 = new Richie( editor49 );
@@ -23,6 +29,7 @@
 		</script>
 	</head>
 	<body onload="init();">
+		<p>Richie version <span id="version"></span></p>
 		<input type="button" onclick="richie.toggleStyling( 'H1' );" value="H1"/>
 		<input type="button" onclick="richie.toggleStyling( 'B' );" value="Bold"/>
 		<input type="button" onclick="richie.toggleStyling( 'I' );" value="Italic" />

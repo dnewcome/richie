@@ -32,6 +32,7 @@ function Richie( dom ) {
 Richie.isMobile = true;
 Richie.isIphone = false;
 Richie.traceEnabled = true;
+Richie.version = "0.1.1";
 
 Richie.trace = function( msg ) {
 	if( Richie.traceEnabled == true ) {
