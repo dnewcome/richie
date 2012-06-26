@@ -12,7 +12,7 @@ function Richie( dom ) {
 	this.m_editor.innerHTML = "<div class='content'><p></p></div>";
 	this.m_content = dom.firstChild;
 	this.m_keyboardInput = null;
-	console.log( dom.tabIndex );
+	Richie.trace( dom.tabIndex );
 	
 	
 	
@@ -31,6 +31,13 @@ function Richie( dom ) {
 
 Richie.isMobile = true;
 Richie.isIphone = false;
+Richie.traceEnabled = true;
+
+Richie.trace = function( msg ) {
+	if( Richie.traceEnabled == true ) {
+		console.log( msg );
+	} 
+};
 
 /**
 * blinkCursor is needed only for the desktop version. The
@@ -96,7 +103,13 @@ Richie.prototype.repositionInputBox = function() {
 * main handler for events that need charCode (generally printable chars)
 */
 Richie.prototype.handleKey = function( evt ) {
-	console.log( 'KeyPress - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+	Richie.trace( 'KeyPress - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+	var code = evt.charCode;
+	if( navigator.userAgent.match(/Opera/) ) {
+		code = evt.keyCode;
+	}
+	Richie.trace( 'code: ' + code );
+
 	var cursor = this.m_cursor; // document.getElementById( 'cursor' );
 	var el = cursor.parentElement;
 
@@ -141,16 +154,16 @@ Richie.prototype.handleKey = function( evt ) {
 * that don't require them. 
 */
 Richie.prototype.handleKeydown = function( evt ) {
-	console.log( 'KeyDown - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+	Richie.trace( 'KeyDown - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
 	var cursor = this.m_cursor;
 	
 	// backspace
 	// iphone registers 127, other browsers use 8
 	if( evt.keyCode == 8 || evt.keyCode == 127 ) {
 		if( cursor.previousSibling ) {
-			console.log( "backspace: prev sibling found" );
+			Richie.trace( "backspace: prev sibling found" );
 			var prevlength = cursor.previousSibling.nodeValue.length;
-			console.log( "prevlength: " + prevlength );
+			Richie.trace( "prevlength: " + prevlength );
 
 			// workaround for iphone which doesn't update length of text node correctly
 			// we have to remove two chars, and I don't know why. The first backspace
@@ -166,7 +179,7 @@ Richie.prototype.handleKeydown = function( evt ) {
 
 		// if we hit the end of a node, we merge the two nodes
 		else {
-			console.log( "end of node" );
+			Richie.trace( "end of node" );
 			var contents = cursor.parentNode.innerHTML;
 			var nodeToDelete = cursor.parentNode;
 			var previousNode = nodeToDelete.previousSibling;
@@ -197,7 +210,7 @@ Richie.prototype.handleKeydown = function( evt ) {
 		
 		// we are at the edge of the node
 		if( prev == null ) {
-			console.log( "node edge reached" );
+			Richie.trace( "node edge reached" );
 
 			// if prev is still null, either we are either traversing an empty
 			// node or we need to go up a level in the dom tree...
@@ -237,7 +250,7 @@ Richie.prototype.handleKeydown = function( evt ) {
 
 		// we are at the edge of the node
 		if( next == null ) {
-			console.log( "node edge reached" );
+			Richie.trace( "node edge reached" );
 			next = cursor.parentNode.nextSibling;	
 
 			// detect end of document
@@ -294,7 +307,7 @@ Richie.prototype.handleKeydown = function( evt ) {
 * accessing via click in the body of the text.
 */
 Richie.prototype.clickHandler = function( ev ) {
-	console.log( "clickhandler fired" );
+	Richie.trace( "clickhandler fired" );
 	if( Richie.isMobile ) {
 		this.m_keyboardInput.focus();
 	}
@@ -383,13 +396,13 @@ Richie.prototype.focusTextbox = function() {
 	if( this.m_keyboardInput.focused == undefined ) {
 		this.m_keyboardInput.focused = false;
 	}
-	console.log( this.m_keyboardInput.focused );
+	Richie.trace( this.m_keyboardInput.focused );
 	if( this.m_keyboardInput.focused == false ) {
-		console.log( "focusing input textbox" );
+		Richie.trace( "focusing input textbox" );
 		this.m_keyboardInput.focused = true;
 		this.m_keyboardInput.focus();
 	}	
 	else {
-		console.log( "not refocusing input textbox" );
+		Richie.trace( "not refocusing input textbox" );
 	}
 }	
