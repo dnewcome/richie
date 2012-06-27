@@ -1,13 +1,12 @@
 # About
 
 Richie is a Javascript rich text editor for both mobile and desktop browsers.
-It uses the HTML DOM and does not rely on contenteditable or designmode.
+It uses the HTML DOM directly and does not rely on contenteditable or designmode.
 
 # Status
 
-This implementation of Richie grew out of a previous desktop browser
-implementation that was extended with input-handling techniques in order to work 
-on mobile devices such as the iPhone. 
+Richie is under development. Radical changes to the code are expected.
+Don't rely on this current development version.
 
 # Background and theory of operation
 
@@ -39,12 +38,22 @@ The text box movement is achieved using absolute positioning. The box is moved
 around the page as the cursor is moved. This allows focus to be maintained
 as the control is never removed from the DOM in order to change position.
 
+# Testing strategies
+
+Manipulating the DOM one keystroke at a time can be particularly error-prone
+and subject to differences between browsers. Coupled with the desire to
+support many mobile browsers including the iPhone makes it vital to 
+be able to check for regressions quickly and easily. I'm proposing
+the use of Selenium, which now supports the iPhone via a UIWebKitView
+as well as most desktop browsers.
+
 # Limitations
 
-The current implementation is quirky and supports a very limited range of 
-styling options. Known limitations with the iPhone version are:
+ * Buggy 
+ * No copy and paste
 
- * Backspace removes two characters initially due to an inconsistency in the way Safari reports text node lengths. 
+# Bugs 
+
  * Backspace cannot cross a node boundary, so removing bold text and then plain text is not currently possible, nor is it possible to cross a newline boundary.
  * The cursor position does not update
 when a newline is entered. The next character entered causes the cursor to jump. 
@@ -53,6 +62,16 @@ text continues to be inserted at the end of the previous line.
  * There is no way to randomly access a text selection using a touch gesture.
 
 # Future work
+
+The current design manipulates the browser's DOM directly. I'm toying with 
+the thought of using a back buffer instead, and decoupling the data from the
+DOM entirely. This represents another layer of design complexity, so I think
+I'm going to pursue the simpler direct-DOM approach until it becomes apparent
+that managing the DOM on different devices will indeed become too unwieldy.
+
+Most of the near term work will be focused on testing and fixing quirks
+with the existing code. Features such as clicking to select are basically
+broken right now. Copy and paste does not exist at all yet.
 
 # License
 Richie is provided under the MIT free software license. See LICENSE file for 
