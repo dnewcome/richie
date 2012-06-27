@@ -1,0 +1,7 @@
+HTML table-based Selenium tests are here.
+
+The WebDriver interfaces for Python and Ruby don't support
+keyPress directly, but Selenium RC works. Right now I'm running
+these tests directly with Selenium IDE in Firefox. Later
+we'll try to standardize on something to run the tests
+from the command line.
