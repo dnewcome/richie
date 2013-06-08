@@ -100,23 +100,11 @@ Richie.prototype.repositionInputBox = function() {
 	this.m_keyboardInput.style.left = this.m_cursor.offsetLeft - 6 + "px";
 }
 
-/**
-* main handler for events that need charCode (generally printable chars)
-*/
-Richie.prototype.handleKey = function( evt ) {
-	Richie.trace( 'KeyPress - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
-	var code = evt.charCode;
-	if( navigator.userAgent.match(/Opera/) ) {
-		code = evt.keyCode;
-	}
-	Richie.trace( 'code: ' + code );
-
-	var cursor = this.m_cursor; // document.getElementById( 'cursor' );
-	var el = cursor.parentElement;
-
-	// enter key
+Richie.prototype.enterKey = function( evt ) {
+	var cursor = this.m_cursor; 
 	// char code is 10 on iphone for some reason
-	if( evt.charCode == 13 || evt.charCode == 10 ) {
+	if( evt.keyCode == 13 || evt.keyCode == 10 ) {
+		Richie.trace( 'handling enter key' );
 		var ins = document.createElement( 'p' );
 		var restofline = cursor.nextSibling;
 		var nextparagraph = cursor.parentNode.nextSibling;
@@ -128,37 +116,10 @@ Richie.prototype.handleKey = function( evt ) {
 		outernode.insertBefore( ins, nextparagraph );
 		evt.preventDefault();
 	}
-
-	// space
-	else if( evt.charCode == 32 ) { 
-		// insert non-breaking space char via unicode
-		var textNode = document.createTextNode( "\u00a0" );
-		cursor.parentNode.insertBefore( textNode, cursor );
-		evt.preventDefault();
-	}
-
-	// printable character insertion
-	else {
-		var text = this.convertCharcode( code );
-		Richie.trace( 'inserting text ' + text );
-		var textNode = document.createTextNode( text );
-		cursor.parentNode.insertBefore( textNode, cursor );
-	}
-
-	if( Richie.isMobile ) {
-		this.repositionInputBox();
-	}
-	this.m_editor.normalize();
 }
 
-/**
-* handler for key events that don't provide charCode, or for actions
-* that don't require them. 
-*/
-Richie.prototype.handleKeydown = function( evt ) {
-	Richie.trace( 'KeyDown - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
-	var cursor = this.m_cursor;
-	
+Richie.prototype.backspaceKey = function( evt ) {
+	var cursor = this.m_cursor; 
 	// backspace
 	// iphone registers 127, other browsers use 8
 	if( evt.keyCode == 8 || evt.keyCode == 127 ) {
@@ -189,9 +150,58 @@ Richie.prototype.handleKeydown = function( evt ) {
 			previousNode.innerHTML += contents;
 		}
 	}
+}
+
+/**
+* main handler for events that need charCode (generally printable chars)
+*/
+Richie.prototype.handleKey = function( evt ) {
+	Richie.trace( 'KeyPress - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+	var code = evt.charCode;
+	if( navigator.userAgent.match(/Opera/) ) {
+		code = evt.keyCode;
+	}
+	Richie.trace( 'code: ' + code );
+
+	var cursor = this.m_cursor;
+	var el = cursor.parentElement;
+
+	this.enterKey( evt );
+
+	// space
+	if( evt.charCode == 32 ) { 
+		// insert non-breaking space char via unicode
+		var textNode = document.createTextNode( "\u00a0" );
+		cursor.parentNode.insertBefore( textNode, cursor );
+		evt.preventDefault();
+	}
+
+	// printable character insertion
+	else {
+		var text = this.convertCharcode( code );
+		Richie.trace( 'inserting text ' + text );
+		var textNode = document.createTextNode( text );
+		cursor.parentNode.insertBefore( textNode, cursor );
+	}
+
+	if( Richie.isMobile ) {
+		this.repositionInputBox();
+	}
+	this.m_editor.normalize();
+}
+
+/**
+* handler for key events that don't provide charCode, or for actions
+* that don't require them. 
+*/
+Richie.prototype.handleKeydown = function( evt ) {
+	Richie.trace( 'KeyDown - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
+	var cursor = this.m_cursor;
+	
+	this.backspaceKey( evt );	
 
 	// tab 
-	else if( evt.keyCode == 9 ) {
+	if( evt.keyCode == 9 ) {
 		var text = this.convertCharcode( evt.keyCode );
 
 		// can't find a 'non-breaking tab', so insert nbsp
