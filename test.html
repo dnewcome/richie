@@ -14,14 +14,14 @@
 
 			var richie;
 			Richie.isMobile = false;
-			// var richie2;
+			var richie2;
 			function init() {
 				showVersion();
 				var editor44 = document.getElementById( 'editor44' );
-				richie = new Richie( editor44 );
-				// richie2 = new Richie( editor49 );
+				richie = new Richie( editor1 );
+				richie2 = new Richie( editor2 );
 				richie.init();
-				// richie2.init();
+				richie2.init();
 			}
 			function load() {
 				richie.loadText("<h2>headline</h2><p>This is the body.</p>");
@@ -39,6 +39,7 @@
 		<input type="button" onclick="richie.toggleStyling( 'U' );" value="Underline" />
 		<input type="button" onclick="load();" value="Load Content" />
 		<input type="button" onclick="read();" value="Read Content" />
-		<div id="editor44" class="editor"></div>
+		<div id="editor1" class="editor"></div>
+		<div id="editor2" class="editor"></div>
 	</body>
 </html>

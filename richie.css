@@ -3,8 +3,10 @@ body {
 }
 .editor { 
 	border: 1px solid black; 
-	height: 300px;
+	height: 100px;
 	width: 600px;	
+	overflow-x: hidden;
+	overflow-y: scroll;
 }
 .content  {
 }
