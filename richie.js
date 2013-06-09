@@ -90,19 +90,8 @@ Richie.prototype.convertCharcode = function( code ) {
 }
 
 /**
-* updated the absolute position of the input control that receives 
-* text input. There is a fudge factor here that lines the cursor up with 
-* the text that is slightly different on different devices. TODO: find a
-* better way of getting positioning right across different devices.
-*/
-Richie.prototype.repositionInputBox = function() {
-	this.m_keyboardInput.style.top = this.m_cursor.offsetTop - 2 + "px";
-	this.m_keyboardInput.style.left = this.m_cursor.offsetLeft - 6 + "px";
-}
-
-
-/**
-* main handler for events that need charCode (generally printable chars)
+* main handler for events that need charCode 
+* (printable chars and nonbreaking space)
 */
 Richie.prototype.handleKey = function( evt ) {
 	Richie.trace( 'KeyPress - Key: ' + evt.keyCode + ' ' + 'Char: ' + evt.charCode );
@@ -148,113 +137,14 @@ Richie.prototype.handleKeydown = function( evt ) {
 	var cursor = this.m_cursor;
 	
 	this.backspaceKey( evt );	
+	this.leftArrow( evt );
+	this.rightArrow( evt );
+	this.upArrow( evt );
+	this.downArrow( evt );
+	this.tabKey( evt );
 
-	// tab 
-	if( evt.keyCode == 9 ) {
-		var text = this.convertCharcode( evt.keyCode );
+	this.doStyling( evt );
 
-		// can't find a 'non-breaking tab', so insert nbsp
-		var textNode = document.createTextNode( "\u00a0\u00a0\u00a0\u00a0" );
-		cursor.parentNode.insertBefore( textNode, cursor );
-
-		// keeps browser in focus
-		evt.preventDefault();
-		evt.stopPropagation();
-	}
-
-	// navigation
-	// should work on mobile devices that support arrow keys, iphone does not.
-	else if( evt.keyCode == 37 ) { // left arrow
-
-		var rng = document.createRange();
-		var prev = cursor.previousSibling;
-		
-		// we are at the edge of the node
-		if( prev == null ) {
-			Richie.trace( "node edge reached" );
-
-			// if prev is still null, either we are either traversing an empty
-			// node or we need to go up a level in the dom tree...
-			// in the case that we find a previous non-empty element, we need
-			// to not offset the range like we do for the nominal case below.
-			// TODO: handle these cases.
-			prev = cursor.parentNode.previousSibling.lastChild;	
-
-			// try to navigate up in tree
-			/*
-			if( prev == null ) {
-				// check if we have reached the beginning of document
-				if( cursor.parentNode.parentNode == content ) { return; }
-				prev = cursor.parentNode.parentNode.lastChild;
-			}
-			*/
-		}
-
-		// length of the previous node - assumed to be text node
-		if( prev.nodeValue ) {
-		var prevlength = prev.nodeValue.length;
-
-		rng.setStart( prev, prevlength - 1 );
-		rng.setEnd( prev, prevlength - 1 );
-
-		rng.insertNode( cursor );
-		}
-		else {
-			cursor.parentNode.previousSibling.appendChild( cursor );
-		}
-
-	}
-	// right arrow
-	else if( evt.keyCode == 39 ) { 	
-		var rng = document.createRange();
-		var next = cursor.nextSibling;
-
-		// we are at the edge of the node
-		if( next == null ) {
-			Richie.trace( "node edge reached" );
-			next = cursor.parentNode.nextSibling;	
-
-			// detect end of document
-			if( next == null ) { return; }
-		}
-		// length of the next node - assumed to be text node
-		// we only need this to avoid errors if node is zero length
-		// var nextlength = cursor.previousSibling.nodeValue.length;
-
-		rng.setStart( next, 1 );
-		rng.setEnd( next, 1 );
-		rng.insertNode( cursor );
-	}
-
-	// TODO: how to find correct position when traversing up 
-	// and down. currently we just go to end of line	
-	else if( evt.keyCode == 38 ) { // up arrow
-		var previousParagraph = cursor.parentNode.previousSibling;
-		previousParagraph.appendChild( cursor );
-		// not sure if we really need preventdefault with arrow keys
-		evt.preventDefault();
-	}
-	else if( evt.keyCode == 40 ) { // down arrow
-		var previousParagraph = cursor.parentNode.nextSibling;
-		previousParagraph.appendChild( cursor );
-		// not sure if we really need preventdefault with arrow keys
-		evt.preventDefault();
-	}
-
-	// keyboard shortcuts for toggling styles
-	// carryover from pc browser version.
-	else if ( evt.keyCode == 66 && evt.ctrlKey == true ) {
-		evt.preventDefault();
-		this.toggleStyling( 'B' );
-	}
-	else if ( evt.keyCode == 73 && evt.ctrlKey == true ) {
-		evt.preventDefault();
-		this.toggleStyling( 'I' );
-	}
-	else if ( evt.keyCode == 85 && evt.ctrlKey == true ) {
-		evt.preventDefault();
-		this.toggleStyling( 'U' );
-	}
 
 	if( Richie.isMobile ) {
 		this.repositionInputBox();
@@ -289,34 +179,6 @@ Richie.prototype.clickHandler = function( ev ) {
 	}
 }
 
-/**
-* Insert text styling 
-* @style is uppercase tag name for bold, italic, etc
-*/
-Richie.prototype.toggleStyling = function( style ) {
-	var cursor = this.m_cursor;
-	var currentElement = cursor.parentNode;
-	if( currentElement.tagName == style ) {
-		// split current node 
-		if( cursor.previousSibling ) {
-			var boldElement = document.createElement( style );
-			boldElement.appendChild( cursor.previousSibling );
-			currentElement.parentNode.insertBefore( boldElement, currentElement );
-		}
-		currentElement.parentNode.insertBefore( cursor, currentElement );
-	}
-	else {
-		var boldElement = document.createElement( style );
-		currentElement.insertBefore( boldElement, cursor );
-		boldElement.appendChild( cursor );
-	}
-	if( Richie.isMobile ) {
-		this.m_keyboardInput.focus();
-	}
-	// put focus back on the text input area after button click
-	// otherwise the zero-width bold span cannot be typed in.
-	this.m_editor.focus();
-}
 
 /**
 * get contents of editor for posting/saving
@@ -353,21 +215,3 @@ Richie.prototype.insertCursor = function() {
 	this.m_content.firstChild.insertBefore( cursor, this.m_content.firstChild.firstChild );
 }
 
-/**
-* Focus the text input box, which causes the onscreen
-* keyboard to display.
-*/
-Richie.prototype.focusTextbox = function() {
-	if( this.m_keyboardInput.focused == undefined ) {
-		this.m_keyboardInput.focused = false;
-	}
-	Richie.trace( this.m_keyboardInput.focused );
-	if( this.m_keyboardInput.focused == false ) {
-		Richie.trace( "focusing input textbox" );
-		this.m_keyboardInput.focused = true;
-		this.m_keyboardInput.focus();
-	}	
-	else {
-		Richie.trace( "not refocusing input textbox" );
-	}
-}	
