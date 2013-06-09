@@ -150,10 +150,9 @@ Richie.prototype.clickHandler = function( ev ) {
 		this.m_keyboardInput.focus();
 	}
 	
-	// TODO: clickhandler puts point at beginning of element
-	// without taking into account character offset	
-	// var node = window.getSelection().focusNode;
-	var node = ev.target || ev.srcElement;
+	var node = window.getSelection().focusNode;
+	var offset = window.getSelection().focusOffset;
+	Richie.trace( 'focus offset: ' + offset );
 
 	// check to see if we have clicked in the editor itself rather
 	// than in the content. If we click in the editor we want to 
@@ -161,9 +160,8 @@ Richie.prototype.clickHandler = function( ev ) {
 	if( node.className == 'editor' ) {
 		node = node.firstChild.firstChild.firstChild;
 	}
-	else {
-		node.parentNode.insertBefore( this.m_cursor, node );
-	}
+	// TODO: use range here and offset to insert cursor
+	node.parentNode.insertBefore( this.m_cursor, node );
 }
 
 
