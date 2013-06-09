@@ -1,8 +1,10 @@
+// richie html mobile/desktop browser-based text editor
+
 function Richie( dom ) {
-	var me = this;
-	dom.addEventListener( "keypress", function(event){ me.handleKey( event );}, false );
-	dom.addEventListener( "keydown", function(event){ me.handleKeydown( event );}, false );
-	dom.addEventListener( "click", function(event){ me.clickHandler( event );}, false );
+	var self = this;
+	dom.addEventListener( "keypress", function(event){ self.handleKey( event );}, false );
+	dom.addEventListener( "keydown", function(event){ self.handleKeydown( event );}, false );
+	dom.addEventListener( "click", function(event){ self.clickHandler( event );}, false );
 	
 	// TODO: not sure if we need the range for mobile
 	// we used this for moving the cursor via click in the desktop version
@@ -11,10 +13,9 @@ function Richie( dom ) {
 	this.m_cursor = null;
 	this.m_editor.innerHTML = "<div class='content'><p></p></div>";
 	this.m_content = dom.firstChild;
+
+	// insertion point on mobile device (floating text box)
 	this.m_keyboardInput = null;
-	Richie.trace( dom.tabIndex );
-	
-	
 	
 	// tabIndex must be set to handle key events
 	if( dom.tabIndex == null || dom.tabIndex == -1 ) {
@@ -22,7 +23,7 @@ function Richie( dom ) {
 	}
 	this.insertCursor();
 	if( !Richie.isMobile ) {
-		setInterval( function() { me.blinkCursor(); }, 500 );
+		setInterval( function() { self.blinkCursor(); }, 500 );
 	}
 	else {
 		this.insertKeyboardInput();
@@ -54,20 +55,6 @@ Richie.prototype.blinkCursor = function() {
 	}
 };
 
-/**
-* On mobile devices we have to fool the phone into thinking that
-* an html input box is active. We do this via a floating input control
-* that remains focused at all times. This method inserts the text
-* box into the dom initially.
-*/
-Richie.prototype.insertKeyboardInput = function() {
-	var el = document.createElement( 'input' );
-	el.type = 'text';
-	el.id = 'keyboardinput';
-	
-	this.m_editor.appendChild( el );
-	this.m_keyboardInput = el;
-}
 
 /**
 * Initialize the editor by setting focus and positioning
@@ -115,7 +102,7 @@ Richie.prototype.handleKey = function( evt ) {
 	}
 
 	// printable character insertion
-	else {
+	else if ( evt.charCode > 32 && evt.charCode < 127 )  {
 		var text = this.convertCharcode( code );
 		Richie.trace( 'inserting text ' + text );
 		var textNode = document.createTextNode( text );

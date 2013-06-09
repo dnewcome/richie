@@ -1,3 +1,5 @@
+// handler functions for non-printable keys
+
 Richie.prototype.enterKey = function( evt ) {
 	var cursor = this.m_cursor; 
 	// char code is 10 on iphone for some reason

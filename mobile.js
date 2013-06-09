@@ -1,4 +1,5 @@
 // code needed for mobile insertion point tricks for iphone
+
 /**
 * Focus the text input box, which causes the onscreen
 * keyboard to display.
@@ -29,3 +30,17 @@ Richie.prototype.repositionInputBox = function() {
 	this.m_keyboardInput.style.left = this.m_cursor.offsetLeft - 6 + "px";
 }
 
+/**
+* On mobile devices we have to fool the phone into thinking that
+* an html input box is active. We do this via a floating input control
+* that remains focused at all times. This method inserts the text
+* box into the dom initially.
+*/
+Richie.prototype.insertKeyboardInput = function() {
+	var el = document.createElement( 'input' );
+	el.type = 'text';
+	el.id = 'keyboardinput';
+	
+	this.m_editor.appendChild( el );
+	this.m_keyboardInput = el;
+}
