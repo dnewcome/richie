@@ -7,6 +7,8 @@ body {
 	width: 600px;	
 	overflow-x: hidden;
 	overflow-y: scroll;
+    /* editor must be position parent in order for scroll-to-cursor to work */
+    position: relative;
 }
 .content  {
 }

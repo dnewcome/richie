@@ -16,6 +16,9 @@ function Richie( dom ) {
 
 	// insertion point on mobile device (floating text box)
 	this.m_keyboardInput = null;
+
+    // keep track of the last few keystrokes
+    this.m_keystack = [];
 	
 	// tabIndex must be set to handle key events
 	if( dom.tabIndex == null || dom.tabIndex == -1 ) {
@@ -55,6 +58,22 @@ Richie.prototype.blinkCursor = function() {
 	}
 };
 
+/**
+* Keep keystrokes
+*/
+Richie.prototype.pushKeystroke = function(key) {
+    Richie.trace('adding: ' + key);
+    this.m_keystack.push(key);
+    Richie.trace('keystack contains: ');
+    Richie.trace(this.m_keystack.join(''));
+    if(this.m_keystack.slice(-3).join('') == '{{{') {
+        this.m_keystack = [];
+        return 'section'
+    }
+    if(this.m_keystack.length > 3) {
+        this.m_keystack.shift();
+    }
+}
 
 /**
 * Initialize the editor by setting focus and positioning
@@ -88,10 +107,17 @@ Richie.prototype.handleKey = function( evt ) {
 	}
 	Richie.trace( 'code: ' + code );
 
+
 	var cursor = this.m_cursor;
 	var el = cursor.parentElement;
 
 	this.enterKey( evt );
+
+    if( this.pushKeystroke( this.convertCharcode( code ) ) == 'section' ) {
+        Richie.trace('adding section');
+        var hr = document.createElement('hr');
+		cursor.parentNode.insertBefore( hr, cursor );
+    }
 
 	// space
 	if( evt.charCode == 32 ) { 
@@ -136,6 +162,7 @@ Richie.prototype.handleKeydown = function( evt ) {
 	if( Richie.isMobile ) {
 		this.repositionInputBox();
 	}
+    this.scrollToCursor(); 
 	this.m_editor.normalize();
 }
 
@@ -200,3 +227,10 @@ Richie.prototype.insertCursor = function() {
 	this.m_content.firstChild.insertBefore( cursor, this.m_content.firstChild.firstChild );
 }
 
+Richie.prototype.scrollToCursor = function() {
+    var cursor = this.m_cursor;
+    var editor = this.m_editor;
+    if( cursor.offsetTop > editor.scrollTop ) {
+        editor.scrollTop = cursor.offsetTop;
+    }
+}
