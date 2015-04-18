@@ -202,7 +202,7 @@ Richie.prototype.clickHandler = function( ev ) {
 		node = node.firstChild.firstChild.firstChild;
 	}
 	// TODO: use range here and offset to insert cursor
-	node.parentNode.insertBefore( this.m_cursor, node );
+	node.insertBefore( this.m_cursor, node );
 }
 
 
@@ -239,6 +239,7 @@ Richie.prototype.insertCursor = function() {
 		cursor.innerHTML = "|";
 	}
 	this.m_content.firstChild.insertBefore( cursor, this.m_content.firstChild.firstChild );
+
 }
 
 Richie.prototype.scrollToCursor = function() {

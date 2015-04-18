@@ -1,7 +1,7 @@
 // handler functions for non-printable keys
 
 Richie.prototype.enterKey = function( evt ) {
-	var cursor = this.m_cursor; 
+	var cursor = this.m_cursor;
 	// char code is 10 on iphone for some reason
 	if( evt.keyCode == 13 || evt.keyCode == 10 ) {
 		Richie.trace( 'handling enter key' );
@@ -9,6 +9,7 @@ Richie.prototype.enterKey = function( evt ) {
 		var restofline = cursor.nextSibling;
 		var nextparagraph = cursor.parentNode.nextSibling;
 		var outernode = cursor.parentNode.parentNode;
+		//var outernode = cursor.parentNode;
 		ins.appendChild( cursor );
 		if( restofline != null ) {
 			ins.appendChild( restofline );
@@ -19,7 +20,7 @@ Richie.prototype.enterKey = function( evt ) {
 }
 
 Richie.prototype.backspaceKey = function( evt ) {
-	var cursor = this.m_cursor; 
+	var cursor = this.m_cursor;
 	// backspace
 	// iphone registers 127, other browsers use 8
 	if( evt.keyCode == 8 || evt.keyCode == 127 ) {
@@ -53,14 +54,14 @@ Richie.prototype.backspaceKey = function( evt ) {
 }
 
 Richie.prototype.leftArrow = function( evt ) {
-	var cursor = this.m_cursor; 
+	var cursor = this.m_cursor;
 	// navigation
 	// should work on mobile devices that support arrow keys, iphone does not.
 	if( evt.keyCode == 37 ) { // left arrow
 
 		var rng = document.createRange();
 		var prev = cursor.previousSibling;
-		
+
 		// we are at the edge of the node
 		if( prev == null ) {
 			Richie.trace( "node edge reached" );
@@ -70,7 +71,7 @@ Richie.prototype.leftArrow = function( evt ) {
 			// in the case that we find a previous non-empty element, we need
 			// to not offset the range like we do for the nominal case below.
 			// TODO: handle these cases.
-			prev = cursor.parentNode.previousSibling.lastChild;	
+			prev = cursor.parentNode.previousSibling.lastChild;
 
 			// try to navigate up in tree
 			/*
@@ -99,16 +100,16 @@ Richie.prototype.leftArrow = function( evt ) {
 }
 
 Richie.prototype.rightArrow = function( evt ) {
-	var cursor = this.m_cursor; 
+	var cursor = this.m_cursor;
 	// right arrow
-	if( evt.keyCode == 39 ) { 	
+	if( evt.keyCode == 39 ) {
 		var rng = document.createRange();
 		var next = cursor.nextSibling;
 
 		// we are at the edge of the node
 		if( next == null ) {
 			Richie.trace( "node edge reached" );
-			next = cursor.parentNode.nextSibling;	
+			next = cursor.parentNode.nextSibling;
 
 			// detect end of document
 			if( next == null ) { return; }
@@ -124,8 +125,8 @@ Richie.prototype.rightArrow = function( evt ) {
 }
 
 Richie.prototype.tabKey = function( evt ) {
-	var cursor = this.m_cursor; 
-	// tab 
+	var cursor = this.m_cursor;
+	// tab
 	if( evt.keyCode == 9 ) {
 		var text = this.convertCharcode( evt.keyCode );
 
@@ -140,9 +141,9 @@ Richie.prototype.tabKey = function( evt ) {
 }
 
 Richie.prototype.upArrow = function( evt ) {
-	var cursor = this.m_cursor; 
-	// TODO: how to find correct position when traversing up 
-	// and down. currently we just go to end of line	
+	var cursor = this.m_cursor;
+	// TODO: how to find correct position when traversing up
+	// and down. currently we just go to end of line
 	if( evt.keyCode == 38 ) { // up arrow
 		var previousParagraph = cursor.parentNode.previousSibling;
 		previousParagraph.appendChild( cursor );
@@ -152,7 +153,7 @@ Richie.prototype.upArrow = function( evt ) {
 }
 
 Richie.prototype.downArrow = function( evt ) {
-	var cursor = this.m_cursor; 
+	var cursor = this.m_cursor;
 	if( evt.keyCode == 40 ) { // down arrow
 		var previousParagraph = cursor.parentNode.nextSibling;
 		previousParagraph.appendChild( cursor );
